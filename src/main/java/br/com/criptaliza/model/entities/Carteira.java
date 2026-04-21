@@ -1,84 +1,135 @@
 package br.com.criptaliza.model.entities;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * Entidade que representa a Carteira de investimentos do usuário.
+ * Ajustada para compatibilidade com banco de dados Oracle e precisão financeira.
+ */
 public class Carteira {
-    //Attributes//
-    private final UUID id;
-    private final Investidor investidor; //associação à classe investidor
+
+    // Identificadores e Associações
+    private Long id;
+    private Investidor investidor;
+    private LocalDateTime dataCriacao;
+
+    // Atributos de Negócio
     private String nome;
     private String faixaRisco;
-    private Float totalInvestido;
-    private Float valorAtual;
+    private BigDecimal totalInvestido;
+    private BigDecimal valorAtual;
 
-    private final Map<String, Float> ativos; // Coleção para armazenar a posição: Ex: <"BTC", 0.5>, <"ETH", 3.0>
+    // Coleções (Relacionamentos que serão carregados via DAO)
+    private Map<String, BigDecimal> ativos = new HashMap<>();
+    private List<Ordem> ordens = new ArrayList<>();
+    private List<RecomendacaoCarteira> recomendacoes = new ArrayList<>();
 
-    private final List<Ordem> ordens;
-    private final List<RecomendacaoCarteira> recomendacoes;
+    // --- CONSTRUTORES ---
 
-    //Constructors//
+    public Carteira() {
+    }
+
+     // Construtor para criação de nova carteira (Cadastro Inicial)
     public Carteira(Investidor investidor, String nome) {
-        this.id = UUID.randomUUID();
         this.investidor = investidor;
         this.nome = nome;
-
         this.faixaRisco = "N/A";
-        this.totalInvestido = 0.0f;
-        this.valorAtual = 0.0f;
-        this.ativos = new HashMap<>();
-        this.ordens = new ArrayList<>();
-        this.recomendacoes = new ArrayList<>();
+        this.totalInvestido = BigDecimal.ZERO;
+        this.valorAtual = BigDecimal.ZERO;
+        this.dataCriacao = LocalDateTime.now();
     }
 
-    //Getters and Setters//
-    public UUID getId() {
+
+    // --- GETTERS E SETTERS ---
+
+    public Long getId() {
         return id;
     }
-    public Investidor getInvestidor() { // Getter para a associação
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Investidor getInvestidor() {
         return investidor;
     }
+
+    public void setInvestidor(Investidor investidor) {
+        this.investidor = investidor;
+    }
+
     public String getNome() {
         return nome;
     }
-    public void setNome(String nome) { // Mutável
+
+    public void setNome(String nome) {
         this.nome = nome;
     }
+
     public String getFaixaRisco() {
         return faixaRisco;
     }
-    public void setFaixaRisco(String faixaRisco) { // Mutável
+
+    public void setFaixaRisco(String faixaRisco) {
         this.faixaRisco = faixaRisco;
     }
-    public Float getTotalInvestido() {
+
+    public BigDecimal getTotalInvestido() {
         return totalInvestido;
     }
-    public Float getValorAtual() {
+
+    public void setTotalInvestido(BigDecimal totalInvestido) {
+        this.totalInvestido = totalInvestido;
+    }
+
+    public BigDecimal getValorAtual() {
         return valorAtual;
     }
+
+    public void setValorAtual(BigDecimal valorAtual) {
+        this.valorAtual = valorAtual;
+    }
+
+    public LocalDateTime getDataCriacao() {
+        return dataCriacao;
+    }
+
+    public void setDataCriacao(LocalDateTime dataCriacao) {
+        this.dataCriacao = dataCriacao;
+    }
+
+    public Map<String, BigDecimal> getAtivos() {
+        return ativos;
+    }
+
     public List<Ordem> getOrdens() {
         return ordens;
     }
+
     public List<RecomendacaoCarteira> getRecomendacoes() {
         return recomendacoes;
     }
 
-    // Métodos para gestão dos Ativos
-    public Map<String, Float> getAtivos() {
-        return ativos;
+    // --- MÉTODOS DE GESTÃO DE ATIVOS (Lógica de Negócio) ---
+
+    public void adicionarAtivo(String ticker, BigDecimal quantidade) {
+        // Se o ativo já existe, soma a quantidade, se não, cria novo registro.
+        this.ativos.merge(ticker, quantidade, BigDecimal::add);
     }
 
-    //Methods//
-    public void adicionarAtivo(String ativo, Float quantidade){
-        // Lógica de adição de ativo na Map 'ativos'
-    }
-    public void removerAtivo(String ativo){
-        // Lógica de remoção de ativo da Map 'ativos'
-    }
-    public Float calcularRentabilidade(){
-        return null; // Placeholder
-    }
-    public void rebalancear(){
-        // Lógica de alocação inteligente
+    public void removerAtivo(String ticker) {
+        this.ativos.remove(ticker);
     }
 
+    public BigDecimal calcularRentabilidade() {
+        if (totalInvestido == null || totalInvestido.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        // Exemplo: ((Valor Atual - Total Investido) / Total Investido) * 100
+        return valorAtual.subtract(totalInvestido)
+                .divide(totalInvestido, 4, BigDecimal.ROUND_HALF_UP)
+                .multiply(new BigDecimal("100"));
+    }
 }

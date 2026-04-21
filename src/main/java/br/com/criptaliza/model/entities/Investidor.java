@@ -43,6 +43,10 @@ public class Investidor{
         this.tradesRegistrados = new ArrayList<>();
     }
 
+    public Investidor() {
+
+    }
+
     //Getters and Setters//
     public long getId() {
         return id;

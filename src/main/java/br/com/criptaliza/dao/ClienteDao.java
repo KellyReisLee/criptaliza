@@ -28,7 +28,10 @@ public class ClienteDao {
             stm.setString(2, cliente.getEmail());
             stm.setString(3, cliente.getTelefone());
             stm.setString(4, cliente.getIdioma());
-            stm.executeUpdate();
+            int linhasAfetadas = stm.executeUpdate();
+            if (linhasAfetadas > 0) {
+                System.out.println("Cliente cadastrado com sucesso!");
+            }
         }
     }
 
