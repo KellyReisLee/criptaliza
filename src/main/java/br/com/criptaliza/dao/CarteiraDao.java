@@ -32,7 +32,7 @@ public class CarteiraDao {
             stm.setTimestamp(3, java.sql.Timestamp.valueOf(carteira.getDataCriacao()));
             int linhasAfetadas = stm.executeUpdate();
             if(linhasAfetadas > 0){
-                System.out.println("Carteira" + carteira.getNome() +  "cadastrada com sucesso!");
+                System.out.println("Carteira (" + carteira.getNome() +  ") cadastrada com sucesso!");
             }
             }
     }
@@ -94,7 +94,7 @@ public class CarteiraDao {
             if (linhasAlteradas == 0){
                 throw new EntidadeNaoEncontradaException("Não foi possível deletar a carteira ID: " + id);
             }
-            System.out.println("Carteira deletada com sucesso!");
+
         }
     }
 
